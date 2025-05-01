@@ -457,13 +457,16 @@ function rcube_webmail() {
 
                             // do not apply styles to an error page (with no image)
                             if (contents.find('img').length) {
-                                contents.find('img').css({ maxWidth: '100%', maxHeight: '100%' });
+                                contents.find('img').css({
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    objectFit: 'contain',
+                                });
                                 contents.find('body').css({
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
                                     height: '100%',
                                     margin: 0,
+                                    display: 'grid',
+                                    placeItems: 'center',
                                 });
                                 contents.find('html').css({ height: '100%' });
                             }
@@ -5434,7 +5437,7 @@ function rcube_webmail() {
                 }
             }, 5000);
 
-            $(window).on('unload', function () {
+            $(window).on('pagehide', function () {
                 // remove copy from local storage if compose screen is left after warning
                 if (!ref.env.server_error) {
                     ref.remove_compose_data(ref.env.compose_id);
@@ -6002,28 +6005,25 @@ function rcube_webmail() {
         var curr = this.image_style ? (this.image_style.rotate || 0) : 0;
 
         this.image_style.rotate = curr > 180 ? 0 : curr + 90;
-        this.apply_image_style();
+
+        $(this.gui_objects.messagepartframe).contents().find('img')
+            .css({ rotate: this.image_style.rotate + 'deg' });
     };
 
     this.image_scale = function (prop) {
-        var curr = this.image_style ? (this.image_style.scale || 1) : 1;
+        var curr = this.image_style ? (this.image_style.scale || 1) : 1,
+            img = $(this.gui_objects.messagepartframe).contents().find('img'),
+            zoom_base = img.width() <= img.height() ? (img.width() / curr) : (img.height() / curr),
+            zoom_dim = img.width() <= img.height() ? ['width', 'height'] : ['height', 'width'];
 
         this.image_style.scale = Math.max(0.1, curr + 0.1 * (prop == '-' ? -1 : 1));
-        this.apply_image_style();
-    };
 
-    this.apply_image_style = function () {
-        var style = [],
-            img = $(this.gui_objects.messagepartframe).contents().find('img');
-
-        $.each({ scale: '', rotate: 'deg' }, function (i, v) {
-            var val = ref.image_style[i];
-            if (val) {
-                style.push(i + '(' + val + v + ')');
-            }
+        img.css({
+            maxWidth: '',
+            maxHeight: '',
+            [zoom_dim[0]]: zoom_base * this.image_style.scale,
+            [zoom_dim[1]]: 'auto',
         });
-
-        img.css('transform', style.join(' '));
     };
 
     // Update import dialog state
@@ -7798,6 +7798,7 @@ function rcube_webmail() {
         } else {
             this.env.mailbox = null;
             this.show_contentframe(false);
+            this.subscription_list.select('');
             this.enable_command('delete-folder', 'purge', false);
         }
     };
@@ -8136,6 +8137,11 @@ function rcube_webmail() {
         if (win = this.get_frame_window(this.env.contentframe)) {
             target = win;
             url += '&_framed=1';
+        }
+
+        // unselect selected row(s)
+        if (action == 'add') {
+            this.subscription_select('');
         }
 
         if (String(target.location.href).indexOf(url) >= 0 && !force) {
