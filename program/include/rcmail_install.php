@@ -659,9 +659,9 @@ class rcmail_install
         } elseif ($expected === '-VALID-') {
             if ($var == 'date.timezone') {
                 try {
-                    $tz = new DateTimeZone($status);
+                    $tz = new \DateTimeZone($status);
                     $this->pass($var);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->optfail($var, empty($status) ? 'not set' : "invalid value detected: {$status}");
                 }
             } else {
@@ -934,7 +934,7 @@ class rcmail_install
         if (class_exists('ZipArchive', false)) {
             echo "Extracting {$zipfile} into {$destdir}\n";
 
-            $zip = new ZipArchive();
+            $zip = new \ZipArchive();
 
             if ($zip->open($zipfile) === true) {
                 if ($flat) {
@@ -1029,6 +1029,21 @@ class rcmail_install
     public function raise_error($p)
     {
         $this->last_error = $p;
+    }
+
+    /**
+     * Content of the logon warning about enabled installer
+     */
+    public static function logonWarning()
+    {
+        return html::div(
+            ['id' => 'login-addon', 'style' => 'background:#ffff66; border:1px solid #ffc300; padding:0.5em; margin:2em auto; width:50em'],
+            '<h2>The Installer is still accessible</h2>'
+            . '<p>The install script of your Roundcube installation is still available to everyone!</p>'
+            . '<p>Please <b>remove</b> the <tt>public_html/installer.php</tt> file from the Roundcube directory because'
+            . ' it may expose sensitive configuration data like server passwords and encryption keys'
+            . ' to the public. Make sure you cannot access <a href="installer.php">the script</a> from your browser.</p>'
+        );
     }
 
     /**

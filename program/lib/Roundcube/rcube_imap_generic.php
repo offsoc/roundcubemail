@@ -609,7 +609,7 @@ class rcube_imap_generic
                     $user = '';
                 }
 
-                $auth_sasl = new Auth_SASL();
+                $auth_sasl = new \Auth_SASL();
                 $auth_sasl = $auth_sasl->factory('digestmd5');
                 $reply = base64_encode($auth_sasl->getResponse($authc, $pass,
                     base64_decode($challenge), $this->host, 'imap', $user));
@@ -625,7 +625,7 @@ class rcube_imap_generic
                 // check response
                 $challenge = substr($line, 2);
                 $challenge = base64_decode($challenge);
-                if (strpos($challenge, 'rspauth=') === false) {
+                if (!str_contains($challenge, 'rspauth=')) {
                     return $this->setError(self::ERROR_BAD,
                         'Unexpected response from server to DIGEST-MD5 response');
                 }
@@ -654,15 +654,15 @@ class rcube_imap_generic
             putenv('KRB5CCNAME=' . $this->prefs['gssapi_cn']);
 
             try {
-                $ccache = new KRB5CCache();
+                $ccache = new \KRB5CCache();
                 $ccache->open($this->prefs['gssapi_cn']);
-                $gssapicontext = new GSSAPIContext();
+                $gssapicontext = new \GSSAPIContext();
                 $gssapicontext->acquireCredentials($ccache);
 
                 $token = '';
                 $success = $gssapicontext->initSecContext($this->prefs['gssapi_context'], '', 0, 0, $token);
                 $token = base64_encode($token);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 trigger_error($e->getMessage(), \E_USER_WARNING);
                 return $this->setError(self::ERROR_BYE, 'GSSAPI authentication failed');
             }
@@ -679,11 +679,11 @@ class rcube_imap_generic
 
             try {
                 if (!$gssapicontext->unwrap($itoken, $itoken)) {
-                    throw new Exception('GSSAPI SASL input token unwrap failed');
+                    throw new \Exception('GSSAPI SASL input token unwrap failed');
                 }
 
                 if (strlen($itoken) < 4) {
-                    throw new Exception('GSSAPI SASL input token invalid');
+                    throw new \Exception('GSSAPI SASL input token invalid');
                 }
 
                 // Integrity/encryption layers are not supported. The first bit
@@ -691,16 +691,16 @@ class rcube_imap_generic
                 // 0x00 should not occur, but support broken implementations.
                 $server_layers = ord($itoken[0]);
                 if ($server_layers && ($server_layers & 0x1) != 0x1) {
-                    throw new Exception('Server requires GSSAPI SASL integrity/encryption');
+                    throw new \Exception('Server requires GSSAPI SASL integrity/encryption');
                 }
 
                 // Construct output token. 0x01 in the first octet = SASL layer "none",
                 // zero in the following three octets = no data follows.
                 // See https://github.com/cyrusimap/cyrus-sasl/blob/e41cfb986c1b1935770de554872247453fdbb079/plugins/gssapi.c#L1284
                 if (!$gssapicontext->wrap(pack('CCCC', 0x1, 0, 0, 0), $otoken, true)) {
-                    throw new Exception('GSSAPI SASL output token wrap failed');
+                    throw new \Exception('GSSAPI SASL output token wrap failed');
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 trigger_error($e->getMessage(), \E_USER_WARNING);
                 return $this->setError(self::ERROR_BYE, 'GSSAPI authentication failed');
             }
@@ -838,7 +838,7 @@ class rcube_imap_generic
             $args = $this->tokenizeResponse($response, 4);
             $delimiter = $args[3];
 
-            if (strlen($delimiter) > 0) {
+            if ($delimiter !== '') {
                 return $this->prefs['delimiter'] = $delimiter;
             }
         }
@@ -1058,7 +1058,7 @@ class rcube_imap_generic
         // insert proxy protocol header, if enabled
         if (!empty($this->prefs['socket_options'])) {
             $proxy_protocol_header = rcube_utils::proxy_protocol_header($this->prefs['socket_options']);
-            if (strlen($proxy_protocol_header) > 0) {
+            if ($proxy_protocol_header !== '') {
                 fwrite($this->fp, $proxy_protocol_header);
             }
         }
@@ -2539,7 +2539,9 @@ class rcube_imap_generic
                     } elseif ($name == 'ENVELOPE') {
                         $result[$id]->envelope = $value;
                     } elseif ($name == 'BODYSTRUCTURE' || ($name == 'BODY' && count($value) > 2)) {
-                        if (!is_array($value[0]) && (strtolower($value[0]) == 'message' && strtolower($value[1]) == 'rfc822')) {
+                        if (is_string($value[0]) && is_string($value[1])
+                            && strtolower($value[0]) == 'message' && strtolower($value[1]) == 'rfc822'
+                        ) {
                             $value = [$value];
                         }
                         $result[$id]->bodystructure = $value;
@@ -2575,7 +2577,7 @@ class rcube_imap_generic
                     }
 
                     foreach ($lines as $str) {
-                        if (strpos($str, ':') === false) {
+                        if (!str_contains($str, ':')) {
                             continue;
                         }
 
@@ -4096,7 +4098,7 @@ class rcube_imap_generic
             }
 
             // see if it's already been compressed
-            if (strpos($messages, ':') !== false) {
+            if (str_contains($messages, ':')) {
                 return preg_match('/[^0-9:,*]/', $messages) ? 'INVALID' : $messages;
             }
 

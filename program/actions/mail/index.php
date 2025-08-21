@@ -42,7 +42,7 @@ class rcmail_action_mail_index extends rcmail_action
      *
      * @param array $args Arguments from the previous step(s)
      */
-    #[Override]
+    #[\Override]
     public function run($args = [])
     {
         $rcmail = rcmail::get_instance();
@@ -1058,6 +1058,12 @@ class rcmail_action_mail_index extends rcmail_action
         // text/enriched
         elseif ($data['type'] == 'enriched') {
             $body = rcube_enriched::to_html($data['body']);
+            $body = self::wash_html($body, $data, $part->replaces);
+            $part->ctype_secondary = 'html';
+        }
+        // markdown
+        elseif ($data['type'] === 'markdown' || $data['type'] === 'x-markdown') {
+            $body = rcube_markdown::to_html($data['body']);
             $body = self::wash_html($body, $data, $part->replaces);
             $part->ctype_secondary = 'html';
         } else {

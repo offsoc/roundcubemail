@@ -147,7 +147,7 @@ class rcube_tnef_decoder
             $this->_getx($data, $this->_geti($data, 32));
             $this->_geti($data, 16);    // checksum
 
-            while (strlen($data) > 0) {
+            while ($data !== '') {
                 switch ($this->_geti($data, 8)) {
                     case self::LVL_MESSAGE:
                         $this->_decodeMessage($data, $message);
@@ -175,7 +175,7 @@ class rcube_tnef_decoder
                     $document = new Document($message['stream']);
                     $formatter = new HtmlFormatter(RCUBE_CHARSET);
                     $message = $formatter->format($document);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     // ignore the body
                     $message = null;
                     rcube::raise_error('Failed to extract RTF/HTML content from TNEF attachment', true);
@@ -268,7 +268,7 @@ class rcube_tnef_decoder
         // Number of attributes.
         $number = $this->_geti($data, 32);
 
-        while ((strlen($data) > 0) && $number--) {
+        while (($data !== '') && $number--) {
             $have_mval = false;
             $num_mval = 1;
             $value = null;

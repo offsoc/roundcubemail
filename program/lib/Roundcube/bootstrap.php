@@ -98,7 +98,7 @@ spl_autoload_register('rcube_autoload');
 // set PEAR error handling (will also load the PEAR main class)
 if (class_exists('PEAR')) {
     // @phpstan-ignore-next-line
-    PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, static function ($err) { rcube::raise_error($err, true); });
+    \PEAR::setErrorHandling(PEAR_ERROR_CALLBACK, static function ($err) { rcube::raise_error($err, true); });
 }
 
 /**
@@ -283,24 +283,27 @@ function array_keys_recursive($array)
     return $keys;
 }
 
-/**
- * Get first element from an array
- *
- * @param array $array Input array
- *
- * @return mixed First element if found, Null otherwise
- */
-function array_first($array)
-{
-    // @phpstan-ignore-next-line
-    if (is_array($array) && !empty($array)) {
-        reset($array);
-        foreach ($array as $element) {
-            return $element;
+// Function added in PHP 8.5
+if (!function_exists('array_first')) {
+    /**
+     * Get first element from an array
+     *
+     * @param array $array Input array
+     *
+     * @return mixed First element if found, Null otherwise
+     */
+    function array_first($array)
+    {
+        // @phpstan-ignore-next-line
+        if (is_array($array) && !empty($array)) {
+            reset($array);
+            foreach ($array as $element) {
+                return $element;
+            }
         }
-    }
 
-    return null;
+        return null;
+    }
 }
 
 /**

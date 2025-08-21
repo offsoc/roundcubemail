@@ -10,8 +10,6 @@
  | any later version with exceptions for skins & plugins.                |
  | See the README file for a full license statement.                     |
  +-----------------------------------------------------------------------+
-
- For translation see https://www.transifex.com/projects/p/roundcube-webmail/resource/labels/
 */
 
 $labels = [];
@@ -613,6 +611,7 @@ $labels['automarkread'] = 'Mark messages as read';
 $labels['afternseconds'] = 'after $n seconds';
 $labels['reqmdn'] = 'Always request a return receipt';
 $labels['reqdsn'] = 'Always request a delivery status notification';
+$labels['alwayskeepformatting'] = 'Always keep original text formatting';
 $labels['replysamefolder'] = 'Place replies in the folder of the message being replied to';
 $labels['defaultabook'] = 'Default address book';
 $labels['autocompletesingle'] = 'Skip alternative email addresses in autocompletion';

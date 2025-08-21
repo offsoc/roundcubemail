@@ -3,6 +3,7 @@
 use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
+use PhpCsFixerCustom\CustomFullyQualifiedStrictTypesFixer;
 
 $finder = Finder::create()
     ->in([__DIR__])
@@ -14,14 +15,18 @@ $finder = Finder::create()
     ->name('*.php.dist')
     ->name('*.sh');
 
+require_once __DIR__ . '/.php-cs-fixer-fully_qualified_strict_types.php';
+
 return (new Config())
     ->setParallelConfig(ParallelConfigFactory::detect())
     ->setRiskyAllowed(true)
+    ->registerCustomFixers([
+        new CustomFullyQualifiedStrictTypesFixer(),
+    ])
     ->setRules([
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
-        '@PHP74Migration' => true,
-        '@PHP74Migration:risky' => true,
+        '@PHP81Migration' => true,
 
         // required by PSR-12
         'concat_space' => [
@@ -77,6 +82,8 @@ return (new Config())
             'annotations' => ['author', 'copyright', 'throws'],
         ],
 
+        'modernize_strpos' => true,
+
         // fn => without curly brackets is less readable,
         // also prevent bounding of unwanted variables for GC
         'use_arrow_functions' => false,
@@ -95,6 +102,14 @@ return (new Config())
         'php_unit_test_case_static_method_calls' => false,
         'psr_autoloading' => false,
         'strict_comparison' => false,
+        'octal_notation' => false,
+
+        // TODO remove after https://github.com/roundcube/roundcubemail/pull/9481
+        'Custom/fully_qualified_strict_types' => ['leading_backslash_in_global_namespace' => static function (string $fqcn): bool {
+            $pluginsRegex = 'filesystem_attachments|password|new_user_identity|identicon|example_addressbook|enigma';
+
+            return !preg_match('~^(rc|html|' . $pluginsRegex . ')[^\\\]*$~', $fqcn);
+        }],
 
         // TODO
         'array_indentation' => false,
@@ -104,11 +119,8 @@ return (new Config())
         'no_blank_lines_after_phpdoc' => false,
         'no_break_comment' => false,
         'phpdoc_summary' => false,
-        'string_length_to_empty' => false,
 
         // TODO - risky
-        'no_unset_on_property' => false,
-        'random_api_migration' => false,
         'strict_param' => false,
     ])
     ->setFinder($finder)

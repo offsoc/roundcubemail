@@ -47,21 +47,21 @@ class rcube_string_replacer
 
         // Simplified domain expression for UTF8 characters handling
         // Support unicode/punycode in top-level domain part
-        $utf_domain = '[^?&@"\'\/()<>\s\r\t\n]+\.?([^\x00-\x2f\x3b-\x40\x5b-\x60\x7b-\x7f]{2,}|xn--[a-zA-Z0-9]{2,})';
-        $url1 = '.:;,';
-        $url2 = 'a-zA-Z0-9%=#$@+?|!&\/_~\[\]\(\){}\*\x80-\xFE-';
+        $utf_domain = '[^?&@"\'\/()<>\s\r\t\n#:,]+\.?([^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]{2,}|xn--[a-zA-Z0-9]{2,})';
+
+        $ip_address = '([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|\[[a-f0-9A-F:]+\]';
 
         // Supported link prefixes
-        $link_prefix = "([\\w]+:\\/\\/|{$this->noword}[Ww][Ww][Ww]\\.|^[Ww][Ww][Ww]\\.)";
+        $link_prefix = "[\\w]+:\\/\\/|{$this->noword}[Ww][Ww][Ww]\\.|^[Ww][Ww][Ww]\\.";
 
         $this->options = $options;
         $this->linkref_index = '/\[([^<>\]#]+)\](:?\s*' . substr($this->pattern, 1, -1) . ')/';
         $this->linkref_pattern = '/\[([^<>\]#]+)\]/';
-        $this->link_pattern = "/{$link_prefix}({$utf_domain}([{$url1}]*[{$url2}]+)*)/";
+        $this->link_pattern = "/({$link_prefix})(({$ip_address}(:[0-9]{1,5})?|{$utf_domain})([\\/?#]\\S*[^\\s.:;,]+)*[\\/?#]?)/";
         $this->mailto_pattern = '/('
             . '[-\w!\#$%&*+~\/^`|{}=]+(?:\.[-\w!\#$%&*+~\/^`|{}=]+)*' // local-part
-            . "@{$utf_domain}"                                        // domain-part
-            . "(\\?[{$url1}{$url2}]+)?"                               // e.g. ?subject=test...
+            . '@' . $utf_domain                                       // domain-part
+            . '(\?\S+)?'                                              // e.g. ?subject=test...
             . ')/';
     }
 
@@ -96,8 +96,7 @@ class rcube_string_replacer
      *
      * @param array $matches Matches result from preg_replace_callback
      *
-     * @return string return valid link for recognized schemes, otherwise
-     *                return the unmodified URL
+     * @return string A valid link for recognized schemes, otherwise the unmodified URL
      */
     protected function link_callback($matches)
     {
@@ -226,34 +225,12 @@ class rcube_string_replacer
         $str = preg_replace_callback($this->mailto_pattern, [$this, 'mailto_callback'], $str);
 
         // resolve link references
-        /*
-        This code requires PHP 7.4 and could be used instead of the two if() statements below,
-        when we get there.
-
         $str = preg_replace_callback($this->linkref_index,
-            [$this, 'linkref_addindex'], $str, -1, $count, PREG_OFFSET_CAPTURE
+            [$this, 'linkref_addindex'], $str, -1, $count, \PREG_OFFSET_CAPTURE
         );
         $str = preg_replace_callback($this->linkref_pattern,
-            [$this, 'linkref_callback'], $str, -1, $count, PREG_OFFSET_CAPTURE
+            [$this, 'linkref_callback'], $str, -1, $count, \PREG_OFFSET_CAPTURE
         );
-        */
-        if (preg_match_all($this->linkref_index, $str, $matches, \PREG_OFFSET_CAPTURE | \PREG_SET_ORDER)) {
-            $diff = 0;
-            foreach ($matches as $m) {
-                $replace = $this->linkref_addindex($m);
-                $str = substr_replace($str, $replace, $m[0][1] + $diff, strlen($m[0][0]));
-                $diff += strlen($replace) - strlen($m[0][0]);
-            }
-        }
-
-        if (preg_match_all($this->linkref_pattern, $str, $matches, \PREG_OFFSET_CAPTURE | \PREG_SET_ORDER)) {
-            $diff = 0;
-            foreach ($matches as $m) {
-                $replace = $this->linkref_callback($m);
-                $str = substr_replace($str, $replace, $m[0][1] + $diff, strlen($m[0][0]));
-                $diff += strlen($replace) - strlen($m[0][0]);
-            }
-        }
 
         return $str;
     }

@@ -26,7 +26,7 @@ class zipdownload extends rcube_plugin
     /**
      * Plugin initialization
      */
-    #[Override]
+    #[\Override]
     public function init()
     {
         // check requirements first
@@ -136,8 +136,8 @@ class zipdownload extends rcube_plugin
         $message = new rcube_message(rcube_utils::get_input_string('_uid', rcube_utils::INPUT_GET));
 
         // open zip file
-        $zip = new ZipArchive();
-        $zip->open($tmpfname, ZipArchive::OVERWRITE);
+        $zip = new \ZipArchive();
+        $zip->open($tmpfname, \ZipArchive::OVERWRITE);
 
         foreach ($message->attachments as $part) {
             $disp_name = $this->_create_displayname($part);
@@ -235,7 +235,7 @@ class zipdownload extends rcube_plugin
         $tmpfname = rcube_utils::temp_filename('zipdownload');
         $tempfiles = [$tmpfname];
         $folders = count($messageset) > 1;
-        $timezone = new DateTimeZone('UTC');
+        $timezone = new \DateTimeZone('UTC');
         $messages = [];
         $size = 0;
 
@@ -306,9 +306,10 @@ class zipdownload extends rcube_plugin
         }
 
         // open zip file
-        $zip = new ZipArchive();
-        $zip->open($tmpfname, ZipArchive::OVERWRITE);
+        $zip = new \ZipArchive();
+        $zip->open($tmpfname, \ZipArchive::OVERWRITE);
 
+        $last_key = array_key_last($messages);
         foreach ($messages as $key => $value) {
             [$uid, $mbox] = explode(':', $key, 2);
             $imap->set_folder($mbox);
@@ -321,7 +322,15 @@ class zipdownload extends rcube_plugin
                 $filter = stream_filter_append($tmpfp, 'mbox_filter');
                 $imap->get_raw_body($uid, $tmpfp);
                 stream_filter_remove($filter);
-                fwrite($tmpfp, "\r\n");
+
+                // Make sure the delimiter is a double \r\n
+                $fstat = fstat($tmpfp);
+                if (stream_get_contents($tmpfp, 2, $fstat['size'] - 2) != "\r\n") {
+                    fwrite($tmpfp, "\r\n");
+                }
+                if ($key != $last_key) {
+                    fwrite($tmpfp, "\r\n");
+                }
             } else { // maildir
                 $tmpfn = rcube_utils::temp_filename('zipmessage');
                 $fp = fopen($tmpfn, 'w');
@@ -385,10 +394,10 @@ class zipdownload extends rcube_plugin
     }
 }
 
-class zipdownload_mbox_filter extends php_user_filter
+class zipdownload_mbox_filter extends \php_user_filter
 {
-    #[Override]
-    #[ReturnTypeWillChange]
+    #[\Override]
+    #[\ReturnTypeWillChange]
     public function filter($in, $out, &$consumed, $closing)
     {
         while ($bucket = stream_bucket_make_writeable($in)) {

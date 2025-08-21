@@ -216,7 +216,7 @@ if ($RCI->configured) {
                 foreach ($composer_data['repositories'] as $k => $_repo) {
                     if ($rkey == repo_key($_repo)) {
                         // switch to https://
-                        if (isset($_repo['url']) && strpos($_repo['url'], 'http://') === 0) {
+                        if (isset($_repo['url']) && str_starts_with($_repo['url'], 'http://')) {
                             $composer_data['repositories'][$k]['url'] = 'https:' . substr($_repo['url'], 5);
                         }
 
@@ -225,7 +225,7 @@ if ($RCI->configured) {
                     }
 
                     // remove old repos
-                    if (isset($_repo['url']) && strpos($_repo['url'], 'git://git.kolab.org') === 0) {
+                    if (isset($_repo['url']) && str_starts_with($_repo['url'], 'git://git.kolab.org')) {
                         unset($composer_data['repositories'][$k]);
                     } elseif (
                         $_repo['type'] == 'package'
@@ -244,6 +244,13 @@ if ($RCI->configured) {
             $composer_data['repositories'] = array_values($composer_data['repositories']);
         }
 
+        // update some other sections
+        foreach (['autoload', 'version'] as $key) {
+            if (!empty($composer_template[$key])) {
+                $composer_data[$key] = $composer_template[$key];
+            }
+        }
+
         $composer_json = json_encode($composer_data, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES);
 
         // write updated composer.json back to disk
@@ -251,7 +258,8 @@ if ($RCI->configured) {
             $success &= (bool) file_put_contents(INSTALL_PATH . 'composer.json', $composer_json);
         } else {
             echo "WARNING: unable to update composer.json!\n";
-            echo "Please replace the 'require' section in your composer.json with the following:\n";
+            echo "Please, copy 'version' and 'autoload' sections from composer.json-dist\n";
+            echo "Please, replace the 'require' section in your composer.json with the following:\n";
 
             $require_json = '';
             foreach ($composer_data['require'] as $pkg => $ver) {

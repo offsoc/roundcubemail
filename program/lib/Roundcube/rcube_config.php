@@ -374,12 +374,7 @@ class rcube_config
      */
     public function get($name, $def = null)
     {
-        if (isset($this->prop[$name])) {
-            $result = $this->prop[$name];
-        } else {
-            $result = $def;
-        }
-
+        $result = $this->prop[$name] ?? $def;
         $result = $this->getenv_default('ROUNDCUBE_' . strtoupper($name), $result);
         $rcube = rcube::get_instance();
 
@@ -389,7 +384,7 @@ class rcube_config
             }
         } elseif ($name == 'client_mimetypes') {
             if (!$result && !$def) {
-                $result = 'text/plain,text/html'
+                $result = 'text/plain,text/html,text/markdown,text/x-markdown'
                     . ',image/jpeg,image/gif,image/png,image/bmp,image/tiff,image/webp'
                     . ',application/x-javascript,application/pdf,application/x-shockwave-flash';
             }
@@ -527,9 +522,9 @@ class rcube_config
     {
         if ($tz = $this->get('timezone')) {
             try {
-                $tz = new DateTimeZone($tz);
-                return $tz->getOffset(new DateTime('now')) / 3600;
-            } catch (Exception $e) {
+                $tz = new \DateTimeZone($tz);
+                return $tz->getOffset(new \DateTime('now')) / 3600;
+            } catch (\Exception $e) {
             }
         }
 
@@ -669,8 +664,8 @@ class rcube_config
             return $this->client_tz;
         }
 
-        // @TODO: remove this legacy timezone handling in the future
         if (isset($_SESSION['timezone'])) {
+            // @TODO: remove this legacy timezone handling in the future
             $props = $this->fix_legacy_props(['timezone' => $_SESSION['timezone']]);
         }
 
@@ -679,9 +674,9 @@ class rcube_config
             $props['timezone'] = $this->resolve_timezone_alias($props['timezone']);
 
             try {
-                $tz = new DateTimeZone($props['timezone']);
+                $tz = new \DateTimeZone($props['timezone']);
                 return $this->client_tz = $tz->getName();
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 // gracefully ignore
             }
         }

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Support IPv6 in database DSN (#9937)
+- Use `htmleditor` setting also for indentity signature (#9954)
+- Fix regression in handling of non-unicode characters in a plain text message (#9953)
+- Fix parsing of inline styles that aren't well-formatted (#9948)
+
+## Release 1.7-beta
+
 - Set minimum required PHP version to 8.1 (#9599)
 - Update to jQuery 3.7.1
 - Drop dependency on JsTimeZoneDetect (#8965)
@@ -10,10 +17,13 @@
 - Renamed composer.json.dist to composer.json (#9279)
 - Make public_html/ entry-point mandatory, all static resources are served via static.php (#9294, #8851)
 - Removed support for MS SQL Server and Oracle (#7854)
+- Added more strict code quality/style validation
+- Added text/markdown mail rendering (#8873)
 - Store uploads metadata in a separate sql database table instead of a session (#8415)
 - Mouse-over menu on messages list (#7141)
 - Advanced mail search syntax with more possibilities (without UI) (#8502)
 - Added an option for a default mail search scope (#9077, #7556)
+- Added an option for default "Keep formatting" state, option can be hidden via `dont_override` (#8987, #9703)
 - Added option to define font list and font-size list for HTML editor - available_fonts/available_font_sizes (#5700)
 - IMAP: Support for HAproxy protocol header in IMAP connections (#8625)
 - Change 'smtp_log' option default value to False
@@ -53,6 +63,7 @@
 - Additional_Message_Headers: Added %u, %d and %l variables (#8746, #8732)
 - ACL: Set default of 'acl_specials' option to ['anyone'] (#8911)
 - Enigma: Support Kolab's Web Of Anti-Trust feature (#8626)
+- Enigma: Add key icon to passphrase input (#9894)
 - Managesieve: Support :encodeurl (RFC 5435) (#8917)
 - Managesieve: Add List-ID to the list of headers for creating new sieve-filters (#8307)
 - Managesieve: Support an array in managesieve_host option (#9447)
@@ -67,6 +78,7 @@
 - Password: Use Guzzle HTTP Client in the `domainfactory` driver
 - Password: Use Guzzle HTTP Client in the `cpanel` driver
 - Password: Check that a user email is part of password in the `zxcvbn` checker (#9404)
+- Virtuser_file: Support opensmtpd file format (#9898)
 - Zipdownload: Change "Download..." menu label into "Export..." (#9713)
 - Fix bug in handling rcmail::format_date()'s $convert argument (#9666)
 - Fix use of Bootstrap's `box-sizing` inside a HTML message content (#9727)
@@ -74,6 +86,12 @@
 - Fix attachment name decoding when 'charset' parameter exists in the headers (#9376)
 - Fix deprecated (in PHP 8.4) use of session_set_save_handler() (#9060)
 - Fix potential HTTP protocol version mismatch (#8982)
+- Fix "Assign to group" action state after creation of a first group (#9889)
+- Fix bug where contacts search would fail if `contactlist_fields` contained vcard fields (#9850)
+- Fix bug where an mbox export file could include inconsistent message delimiters (#9879)
+
+## Release 1.6.11
+
 - Managesieve: Fix match-type selector (remove unsupported options) in delete header action (#9610)
 - Improve installer to fix confusion about disabling SMTP authentication (#9801)
 - Fix PHP warning in index.php (#9813)
@@ -85,6 +103,10 @@
 - Fix a default value and documentation of password_ldap_encodage option (#9658)
 - Remove mobile/floating Create button from the list in Settings > Folders (#9661)
 - Fix Delete and Empty buttons state while creating a folder (#9047)
+- Fix connecting to LDAP using ldapi:// URI (#8990)
+- Fix cursor position on "below the quote" reply in HTML mode (#8700)
+- Fix bug where attachments with content type of `application/vnd.ms-tnef` were not parsed (#7119)
+- Fix Post-Auth RCE via PHP Object Deserialization reported by firs0v [CVE-2025-49113]
 
 ## Release 1.6.10
 

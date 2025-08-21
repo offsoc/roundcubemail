@@ -50,7 +50,7 @@ class rcmail_action_settings_index extends rcmail_action
      *
      * @param array $args Arguments from the previous step(s)
      */
-    #[Override]
+    #[\Override]
     public function run($args = [])
     {
         $rcmail = rcmail::get_instance();
@@ -178,7 +178,7 @@ class rcmail_action_settings_index extends rcmail_action
                         $select->add($rcmail->gettext('autodetect'), 'auto');
 
                         $zones = [];
-                        foreach (DateTimeZone::listIdentifiers() as $i => $tzs) {
+                        foreach (\DateTimeZone::listIdentifiers() as $i => $tzs) {
                             if ($data = self::timezone_standard_time_data($tzs)) {
                                 $zones[$data['key']] = [$tzs, $data['offset']];
                             }
@@ -838,6 +838,20 @@ class rcmail_action_settings_index extends rcmail_action
                         $blocks['editor']['options']['enable_autolink'] = [
                             'title' => html::label($field_id, rcube::Q($rcmail->gettext('enableautolink'))),
                             'content' => $input->show($rcmail->config->get('enable_autolink', true) ? 1 : 0),
+                        ];
+                    }
+
+                    if (!isset($no_override['keep_formatting_default'])) {
+                        if (!$current) {
+                            continue 2;
+                        }
+
+                        $field_id = 'rcmfd_keep_formatting_default';
+                        $input = new html_checkbox(['name' => '_keep_formatting_default', 'id' => $field_id, 'value' => 1]);
+
+                        $blocks['editor']['options']['keep_formatting_default'] = [
+                            'title' => html::label($field_id, rcube::Q($rcmail->gettext('alwayskeepformatting'))),
+                            'content' => $input->show($config['keep_formatting_default'] ? 1 : 0),
                         ];
                     }
 
@@ -1725,13 +1739,13 @@ class rcmail_action_settings_index extends rcmail_action
     public static function timezone_standard_time_data($tzname)
     {
         try {
-            $tz = new DateTimeZone($tzname);
-            $date = new DateTime('now', $tz);
+            $tz = new \DateTimeZone($tzname);
+            $date = new \DateTime('now', $tz);
             $count = 12;
 
             // Move back for a month (up to 12 times) until non-DST date is found
             while ($count > 0 && $date->format('I')) {
-                $date->sub(new DateInterval('P1M'));
+                $date->sub(new \DateInterval('P1M'));
                 $count--;
             }
 
@@ -1742,7 +1756,7 @@ class rcmail_action_settings_index extends rcmail_action
                 'key' => $sortkey,
                 'offset' => $date->format('P'),
             ];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // ignore
         }
     }
