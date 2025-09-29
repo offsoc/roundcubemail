@@ -106,24 +106,58 @@ class MimeTest extends TestCase
             3 => 'group:test1@email.com,test2@email.com',
             4 => 'group: <test1@email.com>,<test2@email.com>',
             5 => '"test:group": "TEST1" <test1@email.com>,"TEST2" <test2@email.com>; test3@email.com',
+            6 => '<test3@email.com>, testgroup: "TEST1" <test1@email.com>, "TEST2" <test2@email.com>;',
+            7 => '<test3@email.com>, testgroup: "TEST1" <test1@email.com>, "TEST2" <test2@email.com>',
+            8 => 'test3@email.com, testgroup: "TEST1" <test1@email.com>, "TEST2" <test2@email.com>',
+            9 => 'Test <attacker@example.org>:<admin@example.net>',
+            10 => '"Test Foo:" <attacker@example.org>:<admin@example.net>',
+            11 => '<attacker@example.org>:<admin@example.net>',
+            12 => 'attacker@example.org:<admin@example.net>',
         ];
 
         $results = [
             0 => [],
-            1 => [1 => ['name' => '', 'mailto' => 'test1@email.com', 'string' => 'test1@email.com']],
-            2 => [1 => ['name' => '', 'mailto' => 'test1@email.com', 'string' => 'test1@email.com']],
+            1 => [1 => ['name' => 'group', 'mailto' => 'test1@email.com', 'string' => 'group <test1@email.com>']],
+            2 => [1 => ['name' => 'group', 'mailto' => 'test1@email.com', 'string' => 'group <test1@email.com>']],
             3 => [
-                1 => ['name' => '', 'mailto' => 'test1@email.com', 'string' => 'test1@email.com'],
+                1 => ['name' => 'group', 'mailto' => 'test1@email.com', 'string' => 'group <test1@email.com>'],
                 2 => ['name' => '', 'mailto' => 'test2@email.com', 'string' => 'test2@email.com'],
             ],
             4 => [
-                1 => ['name' => '', 'mailto' => 'test1@email.com', 'string' => 'test1@email.com'],
+                1 => ['name' => 'group', 'mailto' => 'test1@email.com', 'string' => 'group <test1@email.com>'],
                 2 => ['name' => '', 'mailto' => 'test2@email.com', 'string' => 'test2@email.com'],
             ],
             5 => [
-                1 => ['name' => 'TEST1', 'mailto' => 'test1@email.com', 'string' => 'TEST1 <test1@email.com>'],
+                1 => ['name' => 'test:group TEST1', 'mailto' => 'test1@email.com', 'string' => '"test:group TEST1" <test1@email.com>'],
                 2 => ['name' => 'TEST2', 'mailto' => 'test2@email.com', 'string' => 'TEST2 <test2@email.com>'],
                 3 => ['name' => '', 'mailto' => 'test3@email.com', 'string' => 'test3@email.com'],
+            ],
+            6 => [
+                1 => ['name' => '', 'mailto' => 'test3@email.com', 'string' => 'test3@email.com'],
+                2 => ['name' => 'testgroup TEST1', 'mailto' => 'test1@email.com', 'string' => 'testgroup TEST1 <test1@email.com>'],
+                3 => ['name' => 'TEST2', 'mailto' => 'test2@email.com', 'string' => 'TEST2 <test2@email.com>'],
+            ],
+            7 => [
+                1 => ['name' => '', 'mailto' => 'test3@email.com', 'string' => 'test3@email.com'],
+                2 => ['name' => 'testgroup TEST1', 'mailto' => 'test1@email.com', 'string' => 'testgroup TEST1 <test1@email.com>'],
+                3 => ['name' => 'TEST2', 'mailto' => 'test2@email.com', 'string' => 'TEST2 <test2@email.com>'],
+            ],
+            8 => [
+                1 => ['name' => '', 'mailto' => 'test3@email.com', 'string' => 'test3@email.com'],
+                2 => ['name' => 'testgroup TEST1', 'mailto' => 'test1@email.com', 'string' => 'testgroup TEST1 <test1@email.com>'],
+                3 => ['name' => 'TEST2', 'mailto' => 'test2@email.com', 'string' => 'TEST2 <test2@email.com>'],
+            ],
+            9 => [
+                1 => ['name' => 'Test <attacker@example.org>', 'mailto' => 'admin@example.net', 'string' => '"Test <attacker@example.org>" <admin@example.net>'],
+            ],
+            10 => [
+                1 => ['name' => '"Test Foo:" <attacker@example.org>', 'mailto' => 'admin@example.net', 'string' => '"\"Test Foo:\" <attacker@example.org>" <admin@example.net>'],
+            ],
+            11 => [
+                1 => ['name' => '<attacker@example.org>', 'mailto' => 'admin@example.net', 'string' => '"<attacker@example.org>" <admin@example.net>'],
+            ],
+            12 => [
+                1 => ['name' => 'attacker@example.org', 'mailto' => 'admin@example.net', 'string' => '"attacker@example.org" <admin@example.net>'],
             ],
         ];
 
@@ -364,6 +398,12 @@ class MimeTest extends TestCase
         $content = file_get_contents($file);
         $this->assertSame('image/gif', \rcube_mime::file_content_type($content, 'blocked.gif', 'application/octet-stream', true, true));
         $this->assertSame('image/gif', \rcube_mime::file_content_type($content, 'blocked.gif', 'application/octet-stream', true, false));
+
+        // Test pdf file
+        $file = INSTALL_PATH . 'program/resources/dummy.pdf';
+        $content = file_get_contents($file);
+        $this->assertSame('application/pdf', \rcube_mime::file_content_type($content, '', 'application/octet-stream', true, true));
+        $this->assertSame('application/pdf', \rcube_mime::file_content_type($file, '', 'application/octet-stream', false, true));
     }
 
     /**
