@@ -9,9 +9,14 @@ This file includes only changes we consider noteworthy for users, admins and plu
 - Add scope parameter to contact search (#9863)
 - Add tooltip with folder name to widescreen list of multi-folder listing (#9989, #7950)
 - Add ability to chose from all available contact fields on CSV import (#9419)
+- Add a new plugin called `markdown_editor` that provides an alternative editor to compose emails using Markdown syntax
+- Allow links with "target" attribute in signatures and stored responses (#10017)
+- Preserve requested url on OIDC login (#10033)
+- Managesieve: Show a warning when actions in wrong order (#10015, #6590)
 - Password: Removed the (insecure) virtualmin driver (#8007)
 - Fix jqueryui plugin's minicolors.css issue with custom skins (#9967)
-- Add a new plugin called `markdown_editor` that provides an alternative editor to compose emails with in Markdown syntax, which gets converted into HTML before sending.
+- Fix `skin_logo` with a relative URL (#10030)
+- Replace session attribute `changed` by `expires_at` to allow for variable session lengths per-user.
 
 ## Release 1.7-beta2
 
